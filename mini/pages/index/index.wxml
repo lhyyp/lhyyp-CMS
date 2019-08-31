@@ -1,0 +1,10 @@
+<!--index.wxml-->
+<button bindtap='getToken'> 获取token </button>
+
+<button bindtap='verifyToken'> 检验token </button>
+
+<button bindtap='ongetlatest'> 获取最新期刊</button>
+
+
+<button bindtap='onlike'>X喜欢</button>
+<button bindtap='ondislike'>取消喜欢</button>
