@@ -1,6 +1,6 @@
 const Router = require("koa-router")
 const router = new Router({
-    prefix: '/v1/upload'
+    prefix: '/upload'
 })
 
 const { Success } = require('../../../utils/http-exception')

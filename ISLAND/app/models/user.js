@@ -23,6 +23,24 @@ class User extends Model {
         }
         return user
     }
+    static async verifyUserNamePassword(userName, plainPassword) {
+        const user = await User.findOne({
+            where: {
+                userName
+            }
+        })
+        if (!user) {
+            throw new NotFount("账号不存在")
+        }
+        if (!plainPassword) {
+            throw new MissingParameters("缺少密码参数")
+        }
+        const correct = bcrypt.compareSync(plainPassword, user.password)
+        if (!correct) {
+            throw new Authfailed("密码不正确")
+        }
+        return user
+    }
 
     static async getUserByopenid(openid) {
         const user = await User.findOne({

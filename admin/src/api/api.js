@@ -3,13 +3,9 @@
 
 
 
-/**
- * 接口地址配置文件
- */
 
-
-let api = process.env.NODE_ENV == "development" ? '/api'  : '/backEnd/api'
-export default {
-    login : '/login', //登录
-    imgApi :api+"/uploadImg"
+// let api = process.env.NODE_ENV == "development" ? '/api'  : '/backEnd/api'
+ const api = {
+    login : '/v1/user/login', //登录
 }
+export default api

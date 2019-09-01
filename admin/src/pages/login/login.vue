@@ -69,7 +69,7 @@
 </template>
 <script>
 import validateCode from "src/components/ValidateCode/index";
-import { login } from "src/api/request.js";
+import { userLogin } from "src/api/request.js";
 import { Message } from "element-ui";
 export default {
     created() {},
@@ -129,25 +129,21 @@ export default {
              *  @Token  token对象
              */
             let parms = {};
-            parms.name = this.form.username;
-            parms.pass = this.form.password;
-            this.axios.post("/login", parms).then(res => {
-                    if (res.code == 200) {
-                        let token = "a94756da-2962-40ae-bdea-787fd02c9d92";
-                        this.$store.commit("SET_TOKEN", token);
-                        this.$store.commit("SET_USER", res.result[0]);
-                        this.$router.replace("/home/1");
-                    } else {
-                        Message.error({
-                            message: res.message
-                        });
-                    }
-                })
-                .catch(error => {
+            parms.account = this.form.username;
+            parms.secret = this.form.password;
+            parms.type = 102;
+            userLogin(parms).then(res => {
+                if (res.status == 200) {
+                    this.$store.commit("SET_TOKEN", res.data.token);
+                    this.$store.commit("SET_USER", res.data.user);
+                    this.$router.replace("/home/1");
+                }else{
                     Message.error({
-                        message: error.message
+                        message: res.msg[0]
                     });
-                });
+                }
+                console.log(res);
+            });
         }
     },
     components: {

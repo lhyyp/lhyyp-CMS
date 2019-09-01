@@ -1,11 +1,11 @@
 const Router = require("koa-router")
 const router = new Router({
-    prefix: '/v1/user'
+    prefix: '/api/v1/user'
 })
 const { User } = require("../../models/user")
 const { RegisterValidator, TokenValidator, VerifyTokenValidator } = require("../../validators/validators")
 const { Success, MissingParameters } = require("../../../utils/http-exception")
-const { USER_EMAIL, USER_IPHONE, USER_MINI_PROGRAM } = require("../../lib/enum").LoginType
+const { USER_EMAIL, USER_NAME, USER_MINI_PROGRAM } = require("../../lib/enum").LoginType
 const { generateToken } = require("../../../utils/util")
 const Auth = require("../../../middlewares/auth")
 const WXManger = require("../../services/wx")
@@ -19,14 +19,16 @@ const WXManger = require("../../services/wx")
  */
 
 router.post('/register', async (ctx) => {
+    console.log(ctx)
     const v = await new RegisterValidator().validate(ctx)
     const user = {
         userName: v.get("body.userName"),
         email: v.get("body.email"),
         password: v.get("body.password1")
     }
+    console.log(0)
     await User.create(user)
-    ctx.body =  new Success(user)
+    ctx.body = new Success(user)
 })
 
 /**
@@ -37,14 +39,16 @@ router.post('/register', async (ctx) => {
  */
 router.post('/login', async (ctx) => {
     const v = await new TokenValidator().validate(ctx)
+    const account = v.get("body.account")
     let token = null
     // 处理不同的登录类型
     switch (v.get("body.type")) {
         case USER_EMAIL:
-            token = await emailLogin(v.get("body.account"), v.get("body.secret"))
+            token = await emailLogin(account, v.get("body.secret"))
             break
-        case USER_IPHONE:
-            throw new MissingParameters("没有处理的函数")
+        case USER_NAME:
+            token = await userNameLogin(account, v.get("body.secret"))
+            break
         case USER_MINI_PROGRAM:
             token = await WXManger.codeToToken(v.get("body.account"))
             break
@@ -52,7 +56,12 @@ router.post('/login', async (ctx) => {
             throw new MissingParameters("没有处理的函数")
             break
     }
-    ctx.body =  new Success({'token':token})
+    const user = await User.findOne({
+        where: {
+            userName:account
+        }
+    })
+    ctx.body = new Success({ 'token': token ,user})
 })
 
 
@@ -70,6 +79,10 @@ router.post("/verify", async (ctx) => {
 
 async function emailLogin(account, secret) {
     const user = await User.verifyEmailPassword(account, secret)
+    return token = generateToken(user.id, Auth.USER)
+}
+async function userNameLogin(account, secret) {
+    const user = await User.verifyUserNamePassword(account, secret)
     return token = generateToken(user.id, Auth.USER)
 
 }

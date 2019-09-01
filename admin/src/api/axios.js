@@ -1,92 +1,90 @@
-import axios from 'axios'
-import router from '../router/index';
+import axios from 'axios';
 import {
     Loading,
     Message,
     MessageBox
 } from 'element-ui';
-class AjaxRequest {
+import store from '../store/index';
+import router from '../router/index';
+import { sessionStorage } from 'src/assets/js/storage';
 
-    constructor() {
-        // this.baseURL = process.env.NODE_ENV == "production" ? '/' : 'http://localhost:300'
-        this.timeout = 10000 //超时时间
-        this.queue ={} // 每次的请求的路径
-        this.loadingInstance = ""
-    }
-
-    merge(options) {
-        return { ...options, baseURL: this.baseURL, timeout: this.timeout }
-    }
-
-    setInterceptor(instance, url) {
-        instance.interceptors.request.use( (config) => {
-            if(Object.keys(this.queue).length===0){
-                // this.loadingInstance = Loading.service({
-                //     fullscreen: true,
-                //     lock: true,
-                //     text: '正在请求数据...'
-                // });
-            }
-            config.headers={
-                Authorization: localStorage.getItem('token')
-            }
-            this.queue[url] = url
-            return config;
-        },  (error) => {
-            delete this.queue[url]     //请求成功删除队列的请求路径
-            if(Object.keys(this.queue).length===0){  // 请求队列为空关闭 loading
-                // this.loadingInstance.close();
-            }
-            Message.error({
-                message: '请求失败'
-            });
-            return Promise.reject(error);
-        });
-
-        instance.interceptors.response.use( (response) => {
-            delete this.queue[url]  //请求成功删除队列的请求路径
-            if(Object.keys(this.queue).length===0){  // 所有的請求成功关闭 loading
-                // this.loadingInstance.close();
-            }
-            if (response.status === 200) {
-                return response.data;
-            } else {
-                if(response.data.code === 401){    // 登录失效
-                    router.replace({
-                        path: '/login',
-                        query: {
-                            redirect: router.currentRoute.fullPath
-                        }
-                    });
-                }
-                return response.data;
-            }
-        },  (error) => {
-            delete this.queue[url]     //请求成功删除队列的请求路径
-            if(Object.keys(this.queue).length===0){  // 请求队列为空关闭 loading
-                // this.loadingInstance.close();
-            }
-            Message.error({
-                message: '请求失败'
-            });
-            return Promise.reject(error);
-        });
-    }
-    request(options) {
-        let instance = axios.create()  // 创建一个axios实例
-        this.setInterceptor(instance, options.url)
-        let config = this.merge(options)
-        return instance(config)   //axios执行返回的promise
-    }
-    post(options){
-        let config = { ...options, method: 'post'}
-        return this.request(config)
-
-    }
-    get(options){
-        let config = { ...options, method: 'get'}
-        return this.request(config)
-
-    }
+if (!store.state.token) {
+    store.commit('SET_TOKEN', sessionStorage.getItem('token'));
 }
-export default new AjaxRequest()
+
+// axios 配置
+console.log(process.env.NODE_ENV)
+const http = axios.create({
+    baseURL: process.env.NODE_ENV == "development" ? '/api' : '/backEnd/api',
+    timeout: 5000,
+    headers: {
+        'Content-Type': 'application/json;charset=UTF-8'
+    },
+    transformRequest: [function (data, headers) {
+        headers.token = store.state.token;
+        if (headers['Content-type'] === 'multipart/form-data') {
+            return data;
+        } else {
+            return JSON.stringify(data);
+        }
+    }]
+});
+
+
+var loadingInstance;
+
+// 请求拦截器
+http.interceptors.request.use(config => {
+    loadingInstance = Loading.service({
+        fullscreen: true,
+        lock: true,
+        text: '正在请求数据...'
+    });
+
+    // 开发环境下，如果请求是 post,put,patch,则打印数据体，方便调试
+    if (process.env.NODE_ENV === 'development') {
+        const { method } = config;
+        if (method === 'post' || method === 'put' || method === 'patch') {
+            console.log(config.data);
+        }
+    }
+
+    return config;
+}, error => {
+    loadingInstance.close();
+    Message.error({
+        message: '请求失败'
+    });
+    return Promise.reject(error);
+});
+
+// 响应拦截器
+http.interceptors.response.use(res => {
+    loadingInstance.close();
+    return res.data;
+}, error => {
+    loadingInstance.close();
+    if (error && error.response) {
+        switch (error.response.status) {
+            // 401 token失效
+            case 401:
+                MessageBox.alert('身份信息已过期，请重新登陆', '提示', {
+                    confirmButtonText: '重新登陆',
+                    showClose: false,
+                    type: 'error',
+                    callback: action => {
+                        router.replace({
+                            path: '/login',
+                            query: {
+                                redirect: router.currentRoute.fullPath
+                            }
+                        });
+                    }
+                });
+                break;
+        }
+        return Promise.reject(error);
+    }
+});
+
+export default http;

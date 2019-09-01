@@ -1,5 +1,5 @@
 class HttpException extends Error{
-    constructor(msg ="服务器错误",status = 1000, code = 400){
+    constructor(msg ="服务器错误",status = 1000, code = 200){
         super()
         this.msg = msg
         this.status = status
@@ -17,13 +17,11 @@ class ParameterException extends HttpException{
     }
 }
 
-class Success extends HttpException{
+class Success{
     constructor(data,msg, status){
-        super()
         this.msg = msg || "ok"
         this.data = data
-        this.status = status || 200
-        this.code = 201
+        this.status = 200
 
     }
 }
@@ -33,8 +31,8 @@ class NotFount extends HttpException{
     constructor(msg, status){
         super()
         this.msg = msg || "资源未找到"
-        this.status = status || 401
-        this.code = 200
+        this.status = status || 200
+        this.code = 404
 
     }
 }
@@ -43,7 +41,7 @@ class Authfailed extends HttpException{
     constructor(msg, status){
         super()
         this.msg = msg || "授权失败"
-        this.status = status || 401
+        this.status = status || 200
         this.code = 200
 
     }
@@ -53,7 +51,7 @@ class MissingParameters extends HttpException{
     constructor(msg, status){
         super()
         this.msg = msg || "缺少参数"
-        this.status = status || 401
+        this.status = status || 200
         this.code = 200
 
     }
@@ -62,7 +60,7 @@ class ErrorParameters extends HttpException{
     constructor(msg, status){
         super()
         this.msg = msg || "参数不合法"
-        this.status = status || 401
+        this.status = status || 200
         this.code = 200
 
     }
@@ -72,7 +70,7 @@ class Forbbiden extends HttpException{
     constructor(msg, status){
         super()
         this.msg = msg || "禁止访问"
-        this.status = status || 401
+        this.status = status || 200
         this.code = 403
     }
 }
@@ -82,7 +80,7 @@ class LikeError extends HttpException{
     constructor(msg, status){
         super()
         this.msg = msg || "您已点赞"
-        this.status = status || 401
+        this.status = status || 200
         this.code = 200
     }
 }

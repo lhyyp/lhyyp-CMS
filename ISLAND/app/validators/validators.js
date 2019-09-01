@@ -67,7 +67,7 @@ class RegisterValidator extends LinValidator {
 
         }
     }
-    async validateEmail(vals) {
+    async validateUserName(vals) {
         const email = vals.body.email
         const user = await User.findOne({
             where: {
@@ -77,7 +77,17 @@ class RegisterValidator extends LinValidator {
         if (user) {
             throw new Error("email已存在")
         }
-
+    }
+    async validateEmail(vals) {
+        const userName = vals.body.userName
+        const user = await User.findOne({
+            where: {
+                userName
+            }
+        })
+        if (user) {
+            throw new Error("用户名已存在")
+        }
     }
 }
 

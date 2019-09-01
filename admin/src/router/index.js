@@ -8,38 +8,37 @@ import { setTitle } from 'src/assets/js/util';
 Vue.use(VueRouter);
 
 const routerConfig = {
-  mode: 'hash',
-  linkActiveClass: 'active',
-  routes: routers
+    mode: 'hash',
+    linkActiveClass: 'active',
+    routes: routers
 };
 
 const router = new VueRouter(routerConfig);
 
 let loading;
 router.beforeEach((to, form, next) => {
-  loading = Loading.service({
-    // fullscreen: true,
-    target: '.content-wrapper',
-    text: '跳转中...'
-  });
-  
-  // 设置window.document.title 的名称
-  setTitle(to.meta.title);
-  if (!to.matched.length) {
-    next({
-      path: '/home/1',
-      replace: true
+    loading = Loading.service({
+        // fullscreen: true,
+        target: '.content-wrapper',
+        text: '跳转中...'
     });
-  } else {
-    next();
-  }
+
+    // 设置window.document.title 的名称
+    setTitle(to.meta.title);
+    if (!to.matched.length) {
+        next({
+            path: '/home/1',
+            replace: true
+        });
+    } else {
+        next();
+    }
 });
 
-router.afterEach((to, from) => {
-  // 解决某些情况下loading无法关闭的情况
-  setTimeout(() => {
-    loading.close();
-  }, 0)
+router.afterEach((to, from) => {   // 解决某些情况下loading无法关闭的情况
+    setTimeout(() => {
+        loading.close();
+    }, 0)
 });
 
 export default router;
