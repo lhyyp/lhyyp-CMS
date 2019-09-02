@@ -81,7 +81,6 @@ async function emailLogin(account, secret) {
     return token = generateToken(user.id, Auth.USER)
 }
 async function userNameLogin(account, secret) {
-    console.log(account)
     const user = await User.verifyUserNamePassword(account, secret)
     return token = generateToken(user.id, Auth.USER)
 
