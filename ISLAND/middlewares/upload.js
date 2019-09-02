@@ -44,7 +44,7 @@ const uploadFile = koaBody({
             const fileName = Upload.getUploadFileName(ext);
             // 重新覆盖 file.path 属性
             file.path = `${dir}/${fileName}`;
-            file.outPath = `/static/upload/${dirName}/${fileName}`;
+            file.outPath = `/upload/${dirName}/${fileName}`;
         },
     }
 })

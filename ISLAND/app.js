@@ -17,10 +17,10 @@ app.use(parser())
 app.use(logs)             // 全局添加日志
 app.use(catchError)       // 全局异常处理
 
-
-
-
 InitManger.initCore(app)  // 自动注册路由
+
+
+
 
 
 app.listen(config.port)

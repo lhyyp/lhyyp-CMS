@@ -1,4 +1,5 @@
 import axios from 'axios';
+import  { Base64 }  from "js-base64"
 import {
     Loading,
     Message,
@@ -11,6 +12,12 @@ import { sessionStorage } from 'src/assets/js/storage';
 if (!store.state.token) {
     store.commit('SET_TOKEN', sessionStorage.getItem('token'));
 }
+const encode = () => {
+    const token = store.state.token
+    const base64 = Base64.encode(token+":")
+    return "Basic "+ base64
+
+  }
 
 // axios 配置
 console.log(process.env.NODE_ENV)
@@ -18,10 +25,10 @@ const http = axios.create({
     baseURL: process.env.NODE_ENV == "development" ? '/api' : '/backEnd/api',
     timeout: 5000,
     headers: {
-        'Content-Type': 'application/json;charset=UTF-8'
+        'Content-Type': 'application/json;charset=UTF-8',
+        Authorization: encode()
     },
     transformRequest: [function (data, headers) {
-        headers.token = store.state.token;
         if (headers['Content-type'] === 'multipart/form-data') {
             return data;
         } else {

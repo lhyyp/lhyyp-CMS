@@ -1,8 +1,8 @@
 
 const { db } = require("../../utils/db")
 const { Sequelize, Model ,Op} = require("sequelize")
-const { LikeError } = require("../../utils/http-exception")
-const { Art,NotFount } = require("./art")
+const { LikeError ,NotFount} = require("../../utils/http-exception")
+const { Art } = require("./art")
 
 class Favor extends Model {
 

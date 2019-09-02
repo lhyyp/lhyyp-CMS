@@ -19,14 +19,12 @@ const WXManger = require("../../services/wx")
  */
 
 router.post('/register', async (ctx) => {
-    console.log(ctx)
     const v = await new RegisterValidator().validate(ctx)
     const user = {
         userName: v.get("body.userName"),
         email: v.get("body.email"),
         password: v.get("body.password1")
     }
-    console.log(0)
     await User.create(user)
     ctx.body = new Success(user)
 })
@@ -61,6 +59,7 @@ router.post('/login', async (ctx) => {
             userName:account
         }
     })
+  
     ctx.body = new Success({ 'token': token ,user})
 })
 
@@ -82,6 +81,7 @@ async function emailLogin(account, secret) {
     return token = generateToken(user.id, Auth.USER)
 }
 async function userNameLogin(account, secret) {
+    console.log(account)
     const user = await User.verifyUserNamePassword(account, secret)
     return token = generateToken(user.id, Auth.USER)
 

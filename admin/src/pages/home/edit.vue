@@ -10,7 +10,7 @@
             <el-form-item label="活动名称" prop="title">
                 <el-input v-model="ruleForm.title"></el-input>
             </el-form-item>
-            <el-form-item label="封面图" prop="picturesArticle">
+            <el-form-item label="封面图" prop="Image">
                 <el-upload
                     name="file"
                     class="avatar-uploader"
@@ -22,17 +22,20 @@
                     :on-success="handleAvatarSuccess"
                     :before-upload="beforeAvatarUpload"
                 >
-                    <img
-                        v-if="ruleForm.picturesArticle"
-                        :src="ruleForm.picturesArticle"
-                        class="avatar"
-                    />
+                    <img v-if="ruleForm.Image" :src="ruleForm.Image" class="avatar" />
                     <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                 </el-upload>
                 <span>支持 png 、jpg、jpeg、gif,大小不能超过2M</span>
             </el-form-item>
+            <el-form-item label="摘要" prop="abstract">
+                <el-input v-model="ruleForm.abstract"></el-input>
+            </el-form-item>
             <el-form-item label="正文内容" prop="content">
-                <EditorBar  :isClear="isClear" v-on:getContent='getContent' v-model="ruleForm.content" ></EditorBar>
+                <EditorBar
+                    :isClear="isClear"
+                    v-on:getContent="getContent"
+                    v-model="ruleForm.content"
+                ></EditorBar>
                 <!-- <UE ref="editor" @ueditorValue="ueditorValue" :content="ruleForm.content"></UE> -->
             </el-form-item>
 
@@ -45,18 +48,28 @@
 </template>
 <script>
 // import UE from "src/components/UE.vue";
-import EditorBar from 'src/components/EditorBar.vue'
+import EditorBar from "src/components/EditorBar.vue";
 import { Message } from "element-ui";
-import api from "src/api/api"
+import api from "src/api/api";
+import { addArtByType, getArtDeatilByType } from "src/api/request.js";
 export default {
     data() {
+        let validcodeName = (rule, value, callback) => {
+            let reg = /^[\u0391-\uFFE5A0-9]+$/;
+            if (!reg.test(value)) {
+                callback(new Error("名称只能是汉字或者数字组成"));
+            } else {
+                callback();
+            }
+        };
         return {
             classificationId: "", //分类id
             articleId: "", //文章ID
-            isClear : false,
+            isClear: false,
             ruleForm: {
                 title: "",
-                picturesArticle: "",
+                Image: "",
+                abstract: "", //摘要
                 imgApi: api.imgApi, // 图片上传地址
                 content: ""
             },
@@ -66,13 +79,21 @@ export default {
                         required: true,
                         message: "请输入名称",
                         trigger: "blur"
-                    }
+                    },
+                    { validator: validcodeName, trigger: "blur" }
                 ],
-                picturesArticle: [
+                Image: [
                     {
                         required: true,
                         message: "请选择封面图",
                         trigger: "change"
+                    }
+                ],
+                abstract: [
+                    {
+                        required: true,
+                        message: "请填写摘要",
+                        trigger: "blur"
                     }
                 ],
                 content: [
@@ -98,21 +119,29 @@ export default {
         }
         if (this.$route.query.articleId) {
             this.articleId = this.$route.query.articleId;
-            this.getData()
+            this.getData();
         }
     },
     methods: {
-        getContent(val){
-            this.ruleForm.content = val
-           
+        getContent(val) {
+            this.ruleForm.content = val;
         },
-        getData(){
-            this.axios.get('/getArtiDeail/?id=' + this.articleId).then((res)=>{
-                this.ruleForm.title = res.result.title
-                this.ruleForm.picturesArticle = res.result.picturesArticle
-                this.ruleForm.content = decodeURI(res.result.content)
-            })
-
+        getData() {
+            let params = {};
+            params.type = this.classificationId; // 文章分类
+            params.id = this.articleId;
+            getArtDeatilByType({ params }).then(res => {
+                if (res.status == 200) {
+                    this.ruleForm.title = res.data.title;
+                    this.ruleForm.Image = res.data.Image;
+                    this.ruleForm.content = res.data.content;
+                    this.ruleForm.abstract = res.data.abstract;
+                } else {
+                    Message.error({
+                        message: res.msg[0]
+                    });
+                }
+            });
         },
         submitForm(formName) {
             this.$refs[formName].validate(valid => {
@@ -124,22 +153,21 @@ export default {
                         Message.error({
                             message: "缺少分类Id"
                         });
-                        return false
+                        return false;
                     }
-                    formData.classification = this.classificationId; // 文章分类
-                    formData.picturesArticle = this.ruleForm.picturesArticle; //文章图片
-                    formData.abstract = ""; //文章摘要
-                    if(this.articleId){
-                       formData.id = this.articleId
+                    formData.type = this.classificationId; // 文章分类
+                    formData.Image = this.ruleForm.Image; //文章图片
+                    formData.abstract = this.ruleForm.abstract; //文章摘要
+                    if (this.articleId) {
+                        formData.id = this.articleId;
                     }
-                     this.axios.post("/create", formData).then(res => {
-                            if(res.code == 200){
-                                this.$router.push({
-                                    path:'/home/'+this.classificationId
-                                })
-                            }
-                        });
-                    
+                    addArtByType(formData).then(res => {
+                        if (res.status == 200) {
+                            this.$router.push({
+                                path: "/home/" + this.classificationId
+                            });
+                        }
+                    });
                 } else {
                     Message.error({
                         message: "表单不完整"
@@ -152,12 +180,12 @@ export default {
             this.$refs[formName].resetFields();
         },
         ueditorValue(val) {
-            console.log(val);
+            this.ruleForm.content = val;
         },
 
         handleAvatarSuccess(res, file) {
-            if (res.code == 200) {
-                this.ruleForm.picturesArticle = res.data;
+            if (res.status == 200) {
+                this.ruleForm.Image = res.data.src;
             }
         },
         beforeAvatarUpload(file) {

@@ -1,5 +1,5 @@
 class HttpException extends Error{
-    constructor(msg ="服务器错误",status = 1000, code = 200){
+    constructor(msg ="服务器错误",status = 200, code = 200){
         super()
         this.msg = msg
         this.status = status
@@ -17,8 +17,8 @@ class ParameterException extends HttpException{
     }
 }
 
-class Success{
-    constructor(data,msg, status){
+class Success {
+    constructor(data,msg){
         this.msg = msg || "ok"
         this.data = data
         this.status = 200
@@ -31,8 +31,8 @@ class NotFount extends HttpException{
     constructor(msg, status){
         super()
         this.msg = msg || "资源未找到"
-        this.status = status || 200
-        this.code = 404
+        this.status = status || 404
+        this.code = 200
 
     }
 }
@@ -41,7 +41,7 @@ class Authfailed extends HttpException{
     constructor(msg, status){
         super()
         this.msg = msg || "授权失败"
-        this.status = status || 200
+        this.status = status || 1001
         this.code = 200
 
     }
@@ -51,7 +51,7 @@ class MissingParameters extends HttpException{
     constructor(msg, status){
         super()
         this.msg = msg || "缺少参数"
-        this.status = status || 200
+        this.status = status || 1001
         this.code = 200
 
     }
@@ -60,7 +60,7 @@ class ErrorParameters extends HttpException{
     constructor(msg, status){
         super()
         this.msg = msg || "参数不合法"
-        this.status = status || 200
+        this.status = status || 1003
         this.code = 200
 
     }
@@ -70,8 +70,8 @@ class Forbbiden extends HttpException{
     constructor(msg, status){
         super()
         this.msg = msg || "禁止访问"
-        this.status = status || 200
-        this.code = 403
+        this.status = status || 403
+        this.code = 200
     }
 }
 

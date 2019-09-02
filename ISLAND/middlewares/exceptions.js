@@ -21,7 +21,7 @@ const catchError = async (ctx, next) =>{
                 status : 999,
                 requestUrl : `${ctx.method} ${ctx.path}`   
             }
-            ctx.status = 5000
+            // ctx.status = 5000
         }       
     }
 }

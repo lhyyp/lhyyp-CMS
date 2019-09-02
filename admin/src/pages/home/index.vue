@@ -22,13 +22,15 @@
                             </el-table-column>
                             <el-table-column
                                 label="发布时间"
-                                prop="publicationTime"
+                                prop="createdAt"
                                 align="center"
                                 width="330"
-                            ></el-table-column>
+                            >
+                            <template slot-scope="scope">{{scope.row.createdAt|formatDate }}</template>
+                            </el-table-column>
                             <el-table-column
-                                label="发布时间"
-                                prop="publicationTime"
+                                label="操作"
+                                prop=""
                                 align="center"
                                 width="330"
                             >
@@ -54,34 +56,37 @@
     </div>
 </template>
 <script>
-import { formatDate } from "src/utils/utils";
-import score from "src/components/Score/index";
 import { Message } from "element-ui";
-const POSITIVE = 0;
-const NEGATIVE = 1;
+import { formatDate } from "src/utils/utils";
+import { getListByType ,deleteArtByType} from "src/api/request.js";
 export default {
     mounted() {
-        this.classificationId = this.$route.params.id
+        this.classificationId = this.$route.params.id;
         this.getTableData();
     },
     watch: {
-        '$route' (to, from) {
-            if(to.params.id != "edit" && to.params.id != from.params.id){
-                this.classificationId = to.params.id
-                this.tableData = []
+        $route(to, from) {
+            if (to.params.id != "edit" && to.params.id != from.params.id) {
+                this.classificationId = to.params.id;
+                this.tableData = [];
                 this.getTableData();
-            }else{
-                this.$router.push({path:to.path,query:to.query})
+            } else {
+                this.$router.push({ path: to.path, query: to.query });
             }
-            
+        }
+    },
+     filters: {
+        formatDate(time) {
+            let date = new Date(time);
+            return formatDate(date, "yyyy-MM-dd hh:mm:ss");
         }
     },
     data() {
         return {
             tableData: [],
             loading: true,
-            pagesize: 10,
-            currentpage: 1,
+            pageSize: 1,
+            pageNum: 10,
             classificationId: 1, //分类ids
             total: 0
         };
@@ -100,73 +105,54 @@ export default {
             });
         },
         delView(id) {
-            this.axios
-                .get("/delArticle", {
-                    params: {
-                        id: id
-                    }
-                }).then(res => {
-                    if (res.code == 200) {
-                        Message.success({
-                            message: res.message
-                        });
-                         this.getTableData();
-                    }
-                });
+            let params = {};
+            params.type = this.classificationId;
+            params.art_id = id;
+            deleteArtByType(params).then((res) => {
+                if(res.status == 200){
+                    Message.success({
+                        message: res.msg
+                    });
+                    this.getTableData()
+                }else{
+                    Message.error({
+                        message: res.msg[0]
+                    });
+                }
+            })
         },
         getTableData() {
-            this.axios
-                .get("/getArtiList", {
-                    params: {
-                        number: this.pagesize,
-                        page: this.currentpage,
-                        classification: this.classificationId
-                    }
-                })
-                .then(res => {
-                    if (res.code === 200) {
-                        res.result.map(item => {
-                            item.content = decodeURI(item.content);
-                        });
-                        this.tableData = res.result;
-                        this.total = res.count;
-                    } else {
-                        Message.error({
-                            message: res.msg
-                        });
-                    }
+            let params = {};
+            params.type = this.classificationId;
+            params.pageSize = this.pageSize;
+            params.pageNum = this.pageNum;
+            getListByType({ params }).then(res => {
+                if (res.status == 200) {
+                    this.total = res.data.count;
+                    this.tableData = res.data.rows;
                     this.loading = false;
-                })
-                .catch(error => {
-                    console.log(error);
-                });
-        },
-        handleSizeChange(value) {
-            this.pagesize = value;
-            this.getTableData();
+                } else {
+                    Message.error({
+                        message: res.msg[0]
+                    });
+                }
+            });
         },
         handleCurrentChange(value) {
-            this.currentpage = value;
+            this.pageSize = value;
+            this.getTableData();
+        },
+        handleSizeChange(value) {
+            this.pageNum = value;
             this.getTableData();
         },
         addRowClass({ row, rowIndex }) {
-            if (row.rateType === NEGATIVE) {
+            if (row.rateType === 1) {
                 return "warning-row";
             }
         }
     },
-    filters: {
-        rateTypeToText(rateType) {
-            return rateType === POSITIVE ? "满意" : "不满意";
-        },
-        formatDate(time) {
-            let date = new Date(time);
-            return formatDate(date, "yyyy-MM-dd hh:mm:ss");
-        }
-    },
-    components: {
-        score
-    }
+    components: {}
 };
 </script>
 <style lang='scss'>

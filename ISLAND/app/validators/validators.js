@@ -140,7 +140,7 @@ class Checker {
         this.enumType = type
     }
     check(vals) {
-        let type = vals.body.type || vals.path.type
+        let type = vals.body.type || vals.query.type || vals.path.type
         if (!type) {
             throw new ErrorParameters("type是必须参数")
         }
@@ -150,6 +150,61 @@ class Checker {
         }
     }
 }
+class PageValidator extends LinValidator {
+    constructor() {
+        super()
+        this.pagesize = [
+            new Rule("isInt", "需要是正整数", { min: 1 }),
+            new Rule("isOptional", '', 10)
+        ]
+        this.pageNum = [
+            new Rule("isInt", "需要是正整数", { min: 1 }),
+            new Rule("isOptional", '', 1)
+        ]
+        
+    }
+}
+class ClassicTypeValidator extends LinValidator {
+    constructor() {
+        super()
+        const checker = new Checker(classicType)
+        this.validateType = checker.check.bind(checker)
+    }
+}
+
+
+class addArtByTypeValidator extends LinValidator {
+    constructor() {
+        super()
+        this.title = [
+            new Rule("isLength", "title", {
+                min: 1,
+                max:32
+            }),
+            new Rule('matches', 'title只能是汉字或者数字组成', '^[\u0391-\uFFE5A0-9]+$')
+        ]
+        this.Image = [
+            new Rule("isLength", "title", {
+                min: 1,
+            })
+        ]
+        this.content = [
+            new Rule("isLength", "title", {
+                min: 1,
+            })
+        ]
+        this.abstract = [
+            new Rule("isLength", "title", {
+                min: 1,
+                max:150
+            })
+        ]
+        
+        const checker = new Checker(classicType)
+        this.validateType = checker.check.bind(checker)
+    }
+}
+
 
 class LikeValidator extends PositiveInteferValidator {
     constructor() {
@@ -163,16 +218,16 @@ class LikeValidator extends PositiveInteferValidator {
 class SearchValidator extends LinValidator {
     constructor() {
         super()
-        this.q =[
-            new Rule('isLength','关键字不能为空',{min:1,max:16})
+        this.q = [
+            new Rule('isLength', '关键字不能为空', { min: 1, max: 16 })
         ]
-        this.start =[
-            new Rule('isInt','start不合规范',{min:0,max:60000}),
-            new Rule("isOptional",'',0)
+        this.start = [
+            new Rule('isInt', 'start不合规范', { min: 0, max: 60000 }),
+            new Rule("isOptional", '', 0)
         ]
-        this.count =[
-            new Rule('isInt','conut不合规范',{min:1,max:20}),
-            new Rule("isOptional",'',20)
+        this.count = [
+            new Rule('isInt', 'conut不合规范', { min: 1, max: 20 }),
+            new Rule("isOptional", '', 20)
         ]
 
     }
@@ -181,8 +236,8 @@ class SearchValidator extends LinValidator {
 class UploadValidator extends LinValidator {
     constructor() {
         super()
-        this.files =[
-            new Rule('isLength','',{min:1})
+        this.files = [
+            new Rule('isLength', '', { min: 1 })
         ]
 
     }
@@ -199,5 +254,7 @@ module.exports = {
     VerifyTokenValidator,
     LikeValidator,
     SearchValidator,
-    UploadValidator
+    UploadValidator,
+    ClassicTypeValidator,
+    addArtByTypeValidator
 } 

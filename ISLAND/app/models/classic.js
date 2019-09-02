@@ -16,6 +16,7 @@ const  classFields = {
     title:Sequelize.STRING,
     pubdate:Sequelize.DATEONLY,
     content:Sequelize.STRING,
+    abstract:Sequelize.STRING,
     fac_nums: Sequelize.INTEGER,
     type:Sequelize.TINYINT
 }
