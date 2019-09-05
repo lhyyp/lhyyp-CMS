@@ -45,9 +45,11 @@
                                     ></i>
                                 </el-input>
                             </div>
-                            <div class="validate-code-wrapper">
-                                <validate-code ref="validate-code" @change="_setCheckCode"></validate-code>
-                            </div>
+                            <div
+                                class="validate-code-wrapper"
+                                v-html="verifyCode"
+                                @click="getVerifyCode"
+                            ></div>
                         </div>
                     </el-form-item>
                     <el-form-item style="margin-bottom: 0;">
@@ -68,8 +70,7 @@
     </div>
 </template>
 <script>
-import validateCode from "src/components/ValidateCode/index";
-import { userLogin } from "src/api/request.js";
+import { userLogin, verifyCode } from "src/api/request.js";
 import { Message } from "element-ui";
 export default {
     created() {},
@@ -78,16 +79,13 @@ export default {
             value = value.toUpperCase();
             if (value === "") {
                 callback(new Error("请输入验证码"));
-            } else if (value !== this.checkCode) {
-                callback(new Error("验证码错误"));
-                this.$refs["validate-code"].draw();
             } else {
                 callback();
             }
         };
         return {
             passwordType: "password",
-            checkCode: "",
+            verifyCode: "",
             form: {
                 username: "",
                 password: "",
@@ -104,9 +102,20 @@ export default {
             }
         };
     },
+    mounted() {
+        this.getVerifyCode()
+    },
     methods: {
-        _setCheckCode(value) {
-            this.checkCode = value;
+        getVerifyCode() {
+            verifyCode().then(res => {
+                if (res.status == 200) {
+                    this.verifyCode = res.data;
+                } else {
+                    Message.error({
+                        message: res.msg[0]
+                    });
+                }
+            });
         },
         _togglePasswordType() {
             if (this.passwordType === "password") {
@@ -131,15 +140,16 @@ export default {
             let parms = {};
             parms.account = this.form.username;
             parms.secret = this.form.password;
+            parms.verifyCode = this.form.yanzhengma;
             parms.type = 102;
             userLogin(parms).then(res => {
                 if (res.status == 200) {
                     this.$store.commit("SET_TOKEN", res.data.token);
                     this.$store.commit("SET_USER", res.data.user);
                     this.$router.replace("/home/1");
-                }else{
+                } else {
                     Message.error({
-                        message: res.msg[0]
+                        message: res.msg
                     });
                 }
                 console.log(res);
@@ -147,7 +157,7 @@ export default {
         }
     },
     components: {
-        validateCode
+        // validateCode
     }
 };
 </script>

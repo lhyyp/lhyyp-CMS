@@ -1,10 +1,12 @@
 
 以下是本项目介绍
 
+
 ## 技术栈：
 
-koa2
+koa2   svg-captcha jsonwebtoken xss
 
+ 
 # Build Setup:
 
 

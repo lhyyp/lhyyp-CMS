@@ -20,20 +20,20 @@
                                     <div v-html="scope.row.title"></div>
                                 </template>
                             </el-table-column>
+                            <el-table-column label="摘要" align="center">
+                                <template slot-scope="scope">
+                                    <div v-html="scope.row.abstract"></div>
+                                </template>
+                            </el-table-column>
                             <el-table-column
                                 label="发布时间"
                                 prop="createdAt"
                                 align="center"
                                 width="330"
                             >
-                            <template slot-scope="scope">{{scope.row.createdAt|formatDate }}</template>
+                                <template slot-scope="scope">{{scope.row.createdAt|formatDate }}</template>
                             </el-table-column>
-                            <el-table-column
-                                label="操作"
-                                prop=""
-                                align="center"
-                                width="330"
-                            >
+                            <el-table-column label="操作" prop align="center" width="330">
                                 <template slot-scope="scope">
                                     <el-button type="primary" @click="viewDetail(scope.row.id)">查看</el-button>
                                     <el-button type="primary" @click="editView(scope.row.id)">编辑</el-button>
@@ -58,7 +58,7 @@
 <script>
 import { Message } from "element-ui";
 import { formatDate } from "src/utils/utils";
-import { getListByType ,deleteArtByType} from "src/api/request.js";
+import { getListByType, deleteArtByType } from "src/api/request.js";
 export default {
     mounted() {
         this.classificationId = this.$route.params.id;
@@ -75,7 +75,7 @@ export default {
             }
         }
     },
-     filters: {
+    filters: {
         formatDate(time) {
             let date = new Date(time);
             return formatDate(date, "yyyy-MM-dd hh:mm:ss");
@@ -108,18 +108,18 @@ export default {
             let params = {};
             params.type = this.classificationId;
             params.art_id = id;
-            deleteArtByType(params).then((res) => {
-                if(res.status == 200){
+            deleteArtByType(params).then(res => {
+                if (res.status == 200) {
                     Message.success({
                         message: res.msg
                     });
-                    this.getTableData()
-                }else{
+                    this.getTableData();
+                } else {
                     Message.error({
                         message: res.msg[0]
                     });
                 }
-            })
+            });
         },
         getTableData() {
             let params = {};

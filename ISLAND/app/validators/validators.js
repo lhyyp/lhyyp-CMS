@@ -32,6 +32,13 @@ class TokenValidator extends LinValidator {
                 max: 128
             })
         ]
+        this.verifyCode = [
+            new Rule("isOptional"),
+            new Rule("isLength", "verifyCode不符合规则", {
+                min: 4,
+                max: 4
+            })
+        ]
         const checker = new Checker(LoginType)
         this.validateLoginType = checker.check.bind(checker)
 
@@ -236,9 +243,9 @@ class SearchValidator extends LinValidator {
 class UploadValidator extends LinValidator {
     constructor() {
         super()
-        this.files = [
-            new Rule('isLength', '', { min: 1 })
-        ]
+        // this.file = [
+        //     new Rule('isLength', '', { min: 1 })
+        // ]
 
     }
 }

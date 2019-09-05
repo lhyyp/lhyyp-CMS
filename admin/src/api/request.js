@@ -1,12 +1,19 @@
 import api from './api.js'
 import http from './axios.js'
 /**
- * 
- * @param {*登录} params 
+ * 登录
+ * @param {*} params 
  */
 export const userLogin = (params) => http.post(
     api.login,
     params
+)
+/**
+ * 获取验证码
+ * @param {*} params 
+ */
+export const verifyCode = () => http.get(
+    api.verifyCode
 )
 /**
  * 

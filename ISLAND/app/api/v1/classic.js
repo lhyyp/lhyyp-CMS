@@ -1,4 +1,5 @@
 const Router = require("koa-router")
+const xss = require("xss")
 const router = new Router({
     prefix: '/api/v1/classic'
 })
@@ -37,15 +38,15 @@ router.post("/deleteArtByType", new Auth().m, async ctx => {
     ctx.body = new Success('', "删除成功")
 })
 /**
- * 添加资讯
+ * 添加/修改资讯
  */
 router.post("/addArtByType", new Auth().m, async ctx => {
     const v = await new addArtByTypeValidator().validate(ctx);
     const type = parseInt(v.get("body.type"))
-    const title = v.get("body.title")
+    const title = xss(v.get("body.title"))
     const Image = v.get("body.Image")
-    const content = v.get("body.content")
-    const abstract = v.get("body.abstract")
+    const content = xss(v.get("body.content"))
+    const abstract = xss(v.get("body.abstract"))
     const id = parseInt(v.get("body.id"))
     const data = await Art.addArtByType(type, title, Image, content, abstract, id)
     let msg = id ? '修改成功' : "添加成功"

@@ -13,6 +13,7 @@
             <el-form-item label="封面图" prop="Image">
                 <el-upload
                     name="file"
+                    :data="upLoadData"
                     class="avatar-uploader"
                     accept=".jpg, .png, .jpeg, .gif"
                     :action="ruleForm.imgApi"
@@ -66,6 +67,9 @@ export default {
             classificationId: "", //分类id
             articleId: "", //文章ID
             isClear: false,
+            upLoadData:{
+                dirName:101
+            },
             ruleForm: {
                 title: "",
                 Image: "",

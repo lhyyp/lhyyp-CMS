@@ -4,7 +4,7 @@ const router = new Router({
 })
 const { User } = require("../../models/user")
 const { RegisterValidator, TokenValidator, VerifyTokenValidator } = require("../../validators/validators")
-const { Success, MissingParameters } = require("../../../utils/http-exception")
+const { Success, MissingParameters,ErrorParameters } = require("../../../utils/http-exception")
 const { USER_EMAIL, USER_NAME, USER_MINI_PROGRAM } = require("../../lib/enum").LoginType
 const { generateToken } = require("../../../utils/util")
 const Auth = require("../../../middlewares/auth")
@@ -45,6 +45,9 @@ router.post('/login', async (ctx) => {
             token = await emailLogin(account, v.get("body.secret"))
             break
         case USER_NAME:
+            if(ctx.session.captcha.toUpperCase() !== v.get("body.verifyCode").toUpperCase()){
+                throw new ErrorParameters("验证码错误")
+            }
             token = await userNameLogin(account, v.get("body.secret"))
             break
         case USER_MINI_PROGRAM:
